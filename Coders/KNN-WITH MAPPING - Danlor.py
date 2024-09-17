@@ -8,7 +8,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
 
 # Load the dataset
-data = pd.read_csv('edited-fruits.csv')
+data = pd.read_csv('Coders/edited-fruits.csv')
 
 # Split features (X) and labels (y)
 X = data[['width', 'height']]  # Ensure feature names are consistent

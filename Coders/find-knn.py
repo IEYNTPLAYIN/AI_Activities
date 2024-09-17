@@ -8,7 +8,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.preprocessing import StandardScaler
 
 # Load and prepare the data
-data = pd.read_csv('edited-fruits.csv')
+data = pd.read_csv('Coders/edited-fruits.csv')
 
 X = data[['mass', 'width', 'height', 'color_score']]  # Features
 y = data['fruit_label']  # Target variable
