@@ -17,11 +17,28 @@ fruit_colors = {1: 'red', 2: 'yellow', 3: 'orange', 4: 'pink'}
 
 # Split and scale the data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
+
+# Standardize the features
 scaler = StandardScaler()
 X_train_scaled = pd.DataFrame(scaler.fit_transform(X_train), columns=X.columns)
 X_test_scaled = pd.DataFrame(scaler.transform(X_test), columns=X.columns)
 
 def plot_knn(ax, X, y, k, feature1, feature2, new_data=None):
+    """
+    Plot KNN decision boundaries and data points for given features.
+    
+    Parameters:
+    ax (matplotlib.axes.Axes): The axes to plot on
+    X (pd.DataFrame): The feature data
+    y (pd.Series): The target labels
+    k (int): The number of neighbors to use for KNN
+    feature1, feature2 (str): The names of the two features to plot
+    new_data (pd.DataFrame, optional): New data point to classify
+    
+    Returns:
+    int or None: The predicted label for new_data, if provided
+    """
+    
     # Create mesh grid
     x_min, x_max = X[feature1].min() - 1, X[feature1].max() + 1
     y_min, y_max = X[feature2].min() - 1, X[feature2].max() + 1
@@ -51,6 +68,10 @@ def plot_knn(ax, X, y, k, feature1, feature2, new_data=None):
             ax.plot([new_data[feature1].values[0], X[feature1].iloc[indices[0][i]]],
                     [new_data[feature2].values[0], X[feature2].iloc[indices[0][i]]],
                     'k--', alpha=0.3)
+            
+        # Print the average distance to the nearest neighbors
+        avg_distance = np.mean(distances)
+        print(f'Average distance to the {k} nearest neighbors: {avg_distance}')
         
         prediction = knn.predict(new_data[[feature1, feature2]])[0]
     
@@ -59,8 +80,9 @@ def plot_knn(ax, X, y, k, feature1, feature2, new_data=None):
     
     return prediction
 
+
 # Calculate figure size to fit within 1080px vertical height
-fig_width = 10  # Adjust this value to change the aspect ratio
+fig_width = 8  # Adjust this value to change the aspect ratio
 fig_height = min(fig_width * 0.75, 10)  # Limit height to 1080px (assuming 108 DPI)
 
 # Plot setup
@@ -75,9 +97,17 @@ for i, (f1, f2) in enumerate(feature_pairs):
         ax = axs[i, j]
         plot_knn(ax, X_train_scaled, y_train, k, f1, f2)
         knn = KNeighborsClassifier(n_neighbors=k)
+        
+        # Calculate cross-validation accuracy
         cv_scores = cross_val_score(knn, X_train_scaled[[f1, f2]], y_train, cv=5)
         mean_cv_acc = np.mean(cv_scores)
-        ax.set_title(f'K={k}\nCV Acc: {mean_cv_acc*100:.2f}%', fontsize=10)
+        
+        # Calculate test accuracy
+        knn.fit(X_train_scaled[[f1, f2]], y_train)
+        y_pred = knn.predict(X_test_scaled[[f1, f2]])
+        test_acc = accuracy_score(y_test, y_pred)
+        
+        ax.set_title(f'K={k}\nCV Acc: {mean_cv_acc*100:.2f}%\nTest Acc: {test_acc*100:.2f}%', fontsize=9)
 
 plt.tight_layout()
 plt.show()
@@ -100,12 +130,50 @@ for i, (f1, f2) in enumerate(feature_pairs):
 plt.tight_layout()
 plt.show()
 
-# # Print accuracy scores
-# print("\nCross-Validation Accuracy Scores:")
-# for f1, f2 in feature_pairs:
-#     print(f"Features: {f1}, {f2}")
-#     for k in k_values:
-#         knn = KNeighborsClassifier(n_neighbors=k)
-#         cv_scores = cross_val_score(knn, X_train_scaled[[f1, f2]], y_train, cv=5)
-#         mean_cv_acc = np.mean(cv_scores)
-#         print(f"K={k}: Mean CV Accuracy = {mean_cv_acc*100:.2f}%")
+# Calculate and store accuracy scores
+accuracy_data = []
+for f1, f2 in feature_pairs:
+    for k in k_values:
+        knn = KNeighborsClassifier(n_neighbors=k)
+        
+        # Cross-validation accuracy
+        cv_scores = cross_val_score(knn, X_train_scaled[[f1, f2]], y_train, cv=5)
+        mean_cv_acc = np.mean(cv_scores)
+        
+        # Test accuracy
+        knn.fit(X_train_scaled[[f1, f2]], y_train)
+        y_pred = knn.predict(X_test_scaled[[f1, f2]])
+        test_acc = accuracy_score(y_test, y_pred)
+        
+        accuracy_data.append({
+            'Features': f'{f1}, {f2}',
+            'K': k,
+            'CV Accuracy': mean_cv_acc,
+            'Test Accuracy': test_acc
+        })
+
+# Create a DataFrame from the accuracy data
+accuracy_df = pd.DataFrame(accuracy_data)
+
+# Create a bar plot to compare CV and Test accuracies
+plt.figure(figsize=(15, 10))
+bar_width = 0.35
+index = np.arange(len(accuracy_df))
+
+plt.bar(index, accuracy_df['CV Accuracy'], bar_width, label='CV Accuracy', alpha=0.8)
+plt.bar(index + bar_width, accuracy_df['Test Accuracy'], bar_width, label='Test Accuracy', alpha=0.8)
+
+plt.xlabel('Feature Pairs and K Values')
+plt.ylabel('Accuracy')
+plt.title('Comparison of Cross-Validation and Test Accuracies')
+plt.xticks(index + bar_width / 2, [f"{row['Features']}, K={row['K']}" for _, row in accuracy_df.iterrows()], rotation=45, ha='right')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+# Print accuracy scores
+print("\nAccuracy Scores:")
+for _, row in accuracy_df.iterrows():
+    print(f"\nFeatures: {row['Features']}, K={row['K']}")
+    print(f"CV Accuracy = {row['CV Accuracy']*100:.2f}%, Test Accuracy = {row['Test Accuracy']*100:.2f}%")
