@@ -96,7 +96,7 @@ stats_df = pd.DataFrame({
 plt.figure(figsize=(10, 6))
 plt.scatter(df['Date'], y, label="Actual Sales", color="blue", alpha=0.6)
 plt.plot(df['Date'], [slope * xi + intercept for xi in x], color='red', label="Trend Line")
-plt.title("Sales Trend Over Time (Overall)")
+plt.title("Overall Data: Actual vs Predicted Sales")
 plt.xlabel("Date")
 plt.ylabel("Sales")
 plt.legend()
