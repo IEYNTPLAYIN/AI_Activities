@@ -73,13 +73,17 @@ slope, intercept, r, sx, sy = linear_regression(x_train, y_train)
 # Compute residuals and predictions for the test set
 y_test_pred, test_residuals, test_squared_residuals = compute_residuals(x_test, y_test, slope, intercept)
 
-# Create a DataFrame for the testing table
+# Create the DataFrame for the testing table
 test_df = pd.DataFrame({
     'Months': x_test,
     'Sales': y_test,
     'Predicted_Y': y_test_pred,
     'Squared_Residuals': test_squared_residuals
 })
+
+# Calculate the original 'Year-Month' for the test data
+start_date = df['Date'].min()  # Find the earliest date in the original dataset
+test_df['Date'] = test_df['Months'].apply(lambda x: (start_date + pd.DateOffset(months=x)).strftime('%Y-%m'))
 
 # Create a DataFrame for the regression statistics
 stats_df = pd.DataFrame({
@@ -152,17 +156,21 @@ plt.show()
 
 
 # ---- Create and format the Testing Data Table ----
+
+# Create the testing data table
+test_table_data = test_df[['Date', 'Months', 'Sales', 'Predicted_Y', 'Squared_Residuals']].round(2)
+
+# Plot the Testing Data Table
 fig2, ax2 = plt.subplots(figsize=(10, 6))  # Second figure for testing data table
 ax2.axis('off')
 ax2.axis('tight')
 
 # Create the testing data table
-test_table_data = test_df[['Months', 'Sales', 'Predicted_Y', 'Squared_Residuals']].round(2)
 test_table = ax2.table(cellText=test_table_data.values,
                        colLabels=test_table_data.columns,
                        loc='center',
                        cellLoc='center',
-                       colColours=['#f5f5f5', '#f5f5f5', '#f5f5f5', '#f5f5f5'])  # Header background color
+                       colColours=['#f5f5f5', '#f5f5f5', '#f5f5f5', '#f5f5f5', '#f5f5f5'])  # Header background color
 
 # Apply formatting to the testing table
 test_table.auto_set_font_size(False)
