@@ -92,12 +92,13 @@ stats_df = pd.DataFrame({
 plt.figure(figsize=(10, 6))
 plt.scatter(df['Date'], y, label="Actual Sales", color="blue", alpha=0.6)
 plt.plot(df['Date'], [slope * xi + intercept for xi in x], color='red', label="Trend Line")
-plt.title("Sales Trend Over Time")
+plt.title("Sales Trend Over Time (Overall)")
 plt.xlabel("Date")
 plt.ylabel("Sales")
 plt.legend()
 plt.grid(True)
 plt.show()
+
 
 # ---- Create and format the Regression Statistics Table ----
 fig1, ax1 = plt.subplots(figsize=(10, 6))  # First figure for regression statistics
@@ -135,6 +136,20 @@ ax1.set_title("Required Values for Linear Regression", fontsize=16, fontweight='
 
 # Display the first table
 plt.show()
+
+
+# Plotting only the 20% test data (Actual vs Predicted)
+plt.figure(figsize=(10, 6))
+plt.plot(x_test, y_test, 'bo', label="Actual Sales (Test Data)", alpha=0.7)  # Actual sales (blue dots)
+plt.plot(x_test, y_test_pred, 'r-', label="Predicted Sales (Test Data)", alpha=0.7)  # Predicted sales (red line)
+
+plt.title("Test Data: Actual vs Predicted Sales")
+plt.xlabel("Months")
+plt.ylabel("Sales")
+plt.legend()
+plt.grid(True)
+plt.show()
+
 
 # ---- Create and format the Testing Data Table ----
 fig2, ax2 = plt.subplots(figsize=(10, 6))  # Second figure for testing data table
