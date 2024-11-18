@@ -23,9 +23,18 @@ def standard_deviation(values):
 
 # Function to calculate Pearson Correlation
 def pearson_correlation(x, y):
-    x_mean, y_mean = mean(x), mean(y)
-    numerator = sum((xi - x_mean) * (yi - y_mean) for xi, yi in zip(x, y))
-    denominator = np.sqrt(sum((xi - x_mean) ** 2 for xi in x) * sum((yi - y_mean) ** 2 for yi in y))
+    n = len(x)
+    sum_x = sum(x)
+    sum_y = sum(y)
+    sum_xy = sum(xi * yi for xi, yi in zip(x, y))
+    sum_x_squared = sum(xi ** 2 for xi in x)
+    sum_y_squared = sum(yi ** 2 for yi in y)
+    
+    numerator = n * sum_xy - sum_x * sum_y
+    denominator = math.sqrt((n * sum_x_squared - sum_x ** 2) * (n * sum_y_squared - sum_y ** 2))
+    
+    if denominator == 0:
+        return 0  # Avoid division by zero
     return numerator / denominator
 
 # Function for linear regression
