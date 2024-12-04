@@ -33,17 +33,15 @@ probability_test = 1 / (1 + np.exp(-logit_test))
 
 # Apply decision threshold of 0.5
 threshold = 0.5
-predictions = (probability_test >= threshold).astype(int)
 
 # Create a table for Humidity, Rain, Logistic Regression (pi), and Predictions
 table_data = pd.DataFrame({
     'Humidity': humidity_test['Humidity'].values.flatten(),
     'Rain': rain_test,
-    'Logistic Regression (pi)': probability_test.values.ravel(),
-    'Predictions': predictions.values.ravel()
+    'Logistic Regression (pi)': probability_test.values.ravel()
 })
 
-print("\nTable for Humidity, Rain, Logistic Regression (pi), and Predictions:")
+print("\nTable for Humidity, Rain, Logistic Regression (pi):")
 print(table_data.to_string(index=False))
 
 # Generate predictions for plotting the regression curve
