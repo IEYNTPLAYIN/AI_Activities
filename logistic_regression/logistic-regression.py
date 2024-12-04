@@ -19,8 +19,8 @@ if y.dtype == 'object':
     y = label_encoder.fit_transform(y)
 
 # Check the unique values in the target variable
-unique_classes = np.unique(y)
-print(f'Unique classes in the target variable: {unique_classes}')
+# unique_classes = np.unique(y)
+# print(f'Unique classes in the target variable: {unique_classes}')
 
 # Split the dataset into training and testing sets (80% for training, 20% for testing)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=False)
@@ -33,11 +33,11 @@ model.fit(X_train, y_train)
 beta_0 = model.intercept_[0]  # Intercept (Y Intercept Coefficient)
 beta_1 = model.coef_[0][0]    # Coefficient for 'Humidity' (Independent Variable Coefficient)
 
-# Summation of Independent Variable
-sum_X_train = X_train.sum()
+# Summation of Independent Variable (Testing Set)
+sum_X_test = X_test.sum()
 
-# Summation of Dependent Variable
-sum_y_train = y_train.sum()
+# Summation of Dependent Variable (Testing Set)
+sum_y_test = y_test.sum()
 
 # Generate predictions for the test set
 logit_test = beta_0 + beta_1 * X_test
@@ -96,8 +96,8 @@ plt.axis('off')  # Hide the axes
 
 # Add computed values to the table data
 computed_values = pd.DataFrame({
-    'Metric': ['Summation of Independent Variable', 'Summation of Dependent Variable', 'Y Intercept Coefficienct', 'Independent Variable Coefficient'],
-    'Value': [sum_X_train['Humidity'], sum_y_train, beta_0, beta_1]
+    'Metric': ['Summation of Independent Variable (Testing Set)', 'Summation of Dependent Variable (Testing Set)', 'Y Intercept Coefficient', 'Independent Variable Coefficient'],
+    'Value': [sum_X_test['Humidity'], sum_y_test, beta_0, beta_1]
 })
 
 # Add the computed values table to the new figure
@@ -112,7 +112,7 @@ table_computed = plt.table(cellText=computed_values.values,
 plt.show()
 
 # Display results
-print(f"Summation of Independent Variable for Training Set: {sum_X_train}")
-print(f"Summation of Dependent Variable for Training Set: {sum_y_train}")
+print(f"Summation of Independent Variable for Testing Set: {sum_X_test}")
+print(f"Summation of Dependent Variable for Testing Set: {sum_y_test}")
 print(f"Y Intercept Coefficient: {beta_0}")
 print(f"Independent Variable Coefficient: {beta_1}")
