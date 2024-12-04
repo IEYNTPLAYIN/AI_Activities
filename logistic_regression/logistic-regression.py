@@ -9,59 +9,52 @@ from sklearn.preprocessing import LabelEncoder
 data = pd.read_csv('rain_data.csv')  # Replace with your dataset file
 
 # Define independent variables (features) and dependent variable (target)
-X = data[['Humidity']]  # Independent variable (Humidity)
-y = data['Rain']  # Dependent variable (Rain)
-
-
-# Encode the 'rain' column if necessary
-if y.dtype == 'object':
-    label_encoder = LabelEncoder()
-    y = label_encoder.fit_transform(y)
-
-# Check the unique values in the target variable
-# unique_classes = np.unique(y)
-# print(f'Unique classes in the target variable: {unique_classes}')
+humidity = data[['Humidity']]  # Independent variable (Humidity)
+rain = data['Rain']  # Dependent variable (Rain)
 
 # Split the dataset into training and testing sets (80% for training, 20% for testing)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=False)
+humidity_train, humidity_test, rain_train, rain_test = train_test_split(humidity, rain, test_size=0.2, random_state=42, shuffle=False)
 
 # Train the logistic regression model using the training set
 model = LogisticRegression()
-model.fit(X_train, y_train)
+model.fit(humidity_train, rain_train)
 
-# Extract coefficients (β₀ and β₁)
-beta_0 = model.intercept_[0]  # Intercept (Y Intercept Coefficient)
-beta_1 = model.coef_[0][0]    # Coefficient for 'Humidity' (Independent Variable Coefficient)
+# Extract coefficients
+intercept = model.intercept_[0]  # Intercept (Y Intercept Coefficient)
+humidity_coefficient = model.coef_[0][0]  # Coefficient for 'Humidity' (Independent Variable Coefficient)
 
-# Summation of Independent Variable (Testing Set)
-sum_X_test = X_test.sum()
-
-# Summation of Dependent Variable (Testing Set)
-sum_y_test = y_test.sum()
+# Summation of Independent Variable and Dependent Variable(Testing Set)
+sum_humidity_test = humidity_test.sum()
+sum_rain_test = rain_test.sum()
 
 # Generate predictions for the test set
-logit_test = beta_0 + beta_1 * X_test
-pi_test = 1 / (1 + np.exp(-logit_test))
+logit_test = intercept + humidity_coefficient * humidity_test
+probability_test = 1 / (1 + np.exp(-logit_test))
 
-# Create a table for Humidity, Rain, and Logistic Regression (pi)
+# Apply decision threshold of 0.5
+threshold = 0.5
+predictions = (probability_test >= threshold).astype(int)
+
+# Create a table for Humidity, Rain, Logistic Regression (pi), and Predictions
 table_data = pd.DataFrame({
-    'Humidity': X_test['Humidity'].values.flatten(),
-    'Rain': y_test,
-    'Logistic Regression (pi)': pi_test.values.ravel()
+    'Humidity': humidity_test['Humidity'].values.flatten(),
+    'Rain': rain_test,
+    'Logistic Regression (pi)': probability_test.values.ravel(),
+    'Predictions': predictions.values.ravel()
 })
 
-print("\nTable for Humidity, Rain, and Logistic Regression (pi):")
+print("\nTable for Humidity, Rain, Logistic Regression (pi), and Predictions:")
 print(table_data.to_string(index=False))
 
 # Generate predictions for plotting the regression curve
-X_range = np.linspace(X.min().values[0], X.max().values[0], 300).reshape(-1, 1)
-logit = beta_0 + beta_1 * X_range  # Compute the logit function
-pi = 1 / (1 + np.exp(-logit))      # Transform logit into probability
+humidity_range = np.linspace(humidity.min().values[0], humidity.max().values[0], 300).reshape(-1, 1)
+logit = intercept + humidity_coefficient * humidity_range  # Compute the logit function
+probability = 1 / (1 + np.exp(-logit))  # Transform logit into probability
 
 # Plot the actual data points and logistic regression curve using the test set (20% of the data)
 plt.figure(figsize=(10, 6))
-plt.scatter(X_test, y_test, color='blue', label='Test Data (Rain)', zorder=3)
-plt.plot(X_range, pi, color='orange', label='Logistic Regression Curve (π)', zorder=2)
+plt.scatter(humidity_test, rain_test, color='blue', label='Test Data (Rain)', zorder=3)
+plt.plot(humidity_range, probability, color='orange', label='Logistic Regression Curve (π)', zorder=2)
 
 # Customize the plot
 plt.title('Logistic Regression: Rain Prediction vs. Humidity (Test Data)', fontsize=14)
@@ -84,7 +77,7 @@ table = plt.table(cellText=table_data_rounded.values,
                   colLabels=table_data_rounded.columns,
                   cellLoc='center',
                   loc='center',
-                  colColours=['lightblue'] * 3,
+                  colColours=['lightblue'] * 4,
                   bbox=[0.1, 0.1, 0.8, 0.8])  # Adjust bbox to position the table
 
 # Show the table
@@ -97,7 +90,7 @@ plt.axis('off')  # Hide the axes
 # Add computed values to the table data
 computed_values = pd.DataFrame({
     'Metric': ['Summation of Independent Variable (Testing Set)', 'Summation of Dependent Variable (Testing Set)', 'Y Intercept Coefficient', 'Independent Variable Coefficient'],
-    'Value': [sum_X_test['Humidity'], sum_y_test, beta_0, beta_1]
+    'Value': [sum_humidity_test['Humidity'], sum_rain_test, intercept, humidity_coefficient]
 })
 
 # Add the computed values table to the new figure
@@ -112,7 +105,7 @@ table_computed = plt.table(cellText=computed_values.values,
 plt.show()
 
 # Display results
-print(f"Summation of Independent Variable for Testing Set: {sum_X_test}")
-print(f"Summation of Dependent Variable for Testing Set: {sum_y_test}")
-print(f"Y Intercept Coefficient: {beta_0}")
-print(f"Independent Variable Coefficient: {beta_1}")
+print(f"Summation of Independent Variable for Testing Set: {sum_humidity_test}")
+print(f"Summation of Dependent Variable for Testing Set: {sum_rain_test}")
+print(f"Y Intercept Coefficient: {intercept}")
+print(f"Independent Variable Coefficient: {humidity_coefficient}")
